@@ -100,8 +100,8 @@ func readData(device string) (gjson.Result, error) {
 func resultCodeIsOk(SMARTCtlResult int64) bool {
 	result := true
 	if SMARTCtlResult > 0 {
-		bits := fmt.Sprintf("%08b", SMARTCtlResult)
-		// logger.Debug("Return code: %d: %s", SMARTCtlResult, bits)
+		bits := stringReverse(fmt.Sprintf("%08b", SMARTCtlResult))
+		logger.Debug("Return code: %d: %s", SMARTCtlResult, bits)
 		if bits[0] == '1' {
 			logger.Error("Command line did not parse.")
 			result = false
@@ -135,7 +135,7 @@ func resultCodeIsOk(SMARTCtlResult int64) bool {
 // Check json
 func jsonIsOk(json gjson.Result) bool {
 	messages := json.Get("smartctl.messages")
-	// logger.Debug(messages.String())
+	logger.Debug(messages.String())
 	if messages.Exists() {
 		for _, message := range messages.Array() {
 			if message.Get("severity").String() == "error" {
@@ -145,4 +145,14 @@ func jsonIsOk(json gjson.Result) bool {
 		}
 	}
 	return true
+}
+
+// Reverse returns its argument string reversed rune-wise left to right.
+// https://github.com/golang/example/blob/master/stringutil/reverse.go
+func stringReverse(s string) string {
+	r := []rune(s)
+	for i, j := 0, len(r)-1; i < len(r)/2; i, j = i+1, j-1 {
+		r[i], r[j] = r[j], r[i]
+	}
+	return string(r)
 }
